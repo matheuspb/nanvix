@@ -23,6 +23,7 @@
 *.img
 *.pdf
 bochsout.txt
+bx_enh_dbg.ini
 bin/*
 bin/sbin/*
 bin/ubin/*
