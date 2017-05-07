@@ -20,7 +20,7 @@
 
 /**
  * @file nanvix/pm.h
- * 
+ *
  * @brief Process management system
  */
 
@@ -36,7 +36,7 @@
 	#include <sys/types.h>
 	#include <limits.h>
 	#include <signal.h>
-	
+
 	/**
 	 * @name Superuser credentials
 	 */
@@ -52,7 +52,7 @@
 	#define IDLE (&proctab[0]) /**< idle process. */
 	#define INIT (&proctab[1]) /**< init process. */
 	/**@}*/
-	
+
 	/**
 	 * @name Process table boundaries
 	 */
@@ -60,7 +60,7 @@
 	#define FIRST_PROC ((&proctab[1]))           /**< First process. */
 	#define LAST_PROC ((&proctab[PROC_MAX - 1])) /**< Last process.  */
 	/**@}*/
-	
+
 	/**
 	 * @name Process flags
 	 */
@@ -68,7 +68,7 @@
 	#define PROC_NEW 0 /**< Is the process new?     */
 	#define PROC_SYS 1 /**< Handling a system call? */
 	/**@}*/
-	
+
 	/**
 	 * @name Process parameters
 	 */
@@ -76,7 +76,7 @@
 	#define PROC_QUANTUM 50 /**< Quantum.                  */
 	#define NR_PREGIONS   4 /**< Number of memory regions. */
 	/**@}*/
-	
+
 	/**
 	 * @name Process priorities
 	 */
@@ -103,21 +103,21 @@
 	#define PROC_SLEEPING 5 /**< Waiting (uninterruptible). */
 	#define PROC_STOPPED  6 /**< Stopped.                   */
 	/**@}*/
-	
+
 	/**
 	 * @name Offsets to hard-coded fields of a process
 	 */
 	/**@{*/
-	#define PROC_KESP      0 /**< Kernel stack pointer offset.   */
-	#define PROC_CR3       4 /**< Page directory pointer offset. */
-	#define PROC_INTLVL    8 /**< Interrupt level offset.        */
-	#define PROC_FLAGS    12 /**< Process flags.                 */
-	#define PROC_RECEIVED 16 /**< Received signals offset.       */
-	#define PROC_KSTACK   20 /**< Kernel stack pointer offset.   */
-	#define PROC_RESTORER 24 /**< Signal restorer.               */
-	#define PROC_HANDLERS 28 /**< Signal handlers offset.        */
-	#define PROC_IRQLVL 120  /**< IRQ Level offset.              */
-	#define PROC_FSS    124  /**< FPU Saved Status offset.       */
+	#define PROC_KESP       0 /**< Kernel stack pointer offset.   */
+	#define PROC_CR3        4 /**< Page directory pointer offset. */
+	#define PROC_INTLVL     8 /**< Interrupt level offset.        */
+	#define PROC_FLAGS     12 /**< Process flags.                 */
+	#define PROC_RECEIVED  16 /**< Received signals offset.       */
+	#define PROC_KSTACK    20 /**< Kernel stack pointer offset.   */
+	#define PROC_RESTORER  24 /**< Signal restorer.               */
+	#define PROC_HANDLERS  28 /**< Signal handlers offset.        */
+	#define PROC_IRQLVL   120 /**< IRQ Level offset.              */
+	#define PROC_FSS      124 /**< FPU Saved Status offset.       */
 	/**@}*/
 
 #ifndef _ASM_FILE_
@@ -131,21 +131,21 @@
 		 * @name Hard-coded Fields
 		 */
 		/**@{*/
-    	dword_t kesp;                      /**< Kernel stack pointer.   */
-    	dword_t cr3;                       /**< Page directory pointer. */
+		dword_t kesp;                      /**< Kernel stack pointer.   */
+		dword_t cr3;                       /**< Page directory pointer. */
 		dword_t intlvl;                    /**< Interrupt level.        */
 		unsigned flags;                    /**< Process flags.          */
-    	unsigned received;                 /**< Received signals.       */
-    	void *kstack;                      /**< Kernel stack pointer.   */
-    	void (*restorer)(void);            /**< Signal restorer.        */
+		unsigned received;                 /**< Received signals.       */
+		void *kstack;                      /**< Kernel stack pointer.   */
+		void (*restorer)(void);            /**< Signal restorer.        */
 		sighandler_t handlers[NR_SIGNALS]; /**< Signal handlers.        */
 		unsigned irqlvl;                   /**< Current IRQ level.      */
-    	struct fpu fss;                    /**< FPU Saved Status.       */
+		struct fpu fss;                    /**< FPU Saved Status.       */
 		/**@}*/
 
-    	/**
-    	 * @name Memory information
-    	 */
+		/**
+		 * @name Memory information
+		 */
 		/**@{*/
 		struct pde *pgdir;                 /**< Page directory.         */
 		struct pregion pregs[NR_PREGIONS]; /**< Process memory regions. */
@@ -163,7 +163,7 @@
 		mode_t umask;                  /**< User file's creation mask. */
 		dev_t tty;                     /**< Associated tty device.     */
 		/**@}*/
-		
+
 		/**
 		 * @name General information
 		 */
@@ -177,36 +177,36 @@
 		gid_t gid;              /**< Group ID.                */
 		gid_t egid;             /**< Effective group user ID. */
 		gid_t sgid;             /**< Saved set-group-ID.      */
-    	pid_t pid;              /**< Process ID.              */
-    	struct process *pgrp;   /**< Process group ID.        */
-    	struct process *father; /**< Father process.          */
+		pid_t pid;              /**< Process ID.              */
+		struct process *pgrp;   /**< Process group ID.        */
+		struct process *father; /**< Father process.          */
 		char name[NAME_MAX];    /**< Process name.            */
 		/**@}*/
 
-    	/**
-    	 * @name Timing information
-    	 */
+		/**
+		 * @name Timing information
+		 */
 		/**@{*/
-    	unsigned utime;  /**< User CPU time.                          */
-    	unsigned ktime;  /**< Kernel CPU time.                        */
+		unsigned utime;  /**< User CPU time.                          */
+		unsigned ktime;  /**< Kernel CPU time.                        */
 		unsigned cutime; /**< User CPU time of terminated children.   */
 		unsigned cktime; /**< Kernel CPU time of terminated children. */
 		/**@}*/
 
-    	/**
-    	 * @name Scheduling information
-    	 */
+		/**
+		 * @name Scheduling information
+		 */
 		/**@{*/
-    	unsigned state;          /**< Current state.          */
-    	int counter;             /**< Remaining quantum.      */
-    	int priority;            /**< Process priorities.     */
-    	int nice;                /**< Nice for scheduling.    */
-    	unsigned alarm;          /**< Alarm.                  */
+		unsigned state;          /**< Current state.          */
+		int counter;             /**< Remaining quantum.      */
+		int priority;            /**< Process priorities.     */
+		int nice;                /**< Nice for scheduling.    */
+		unsigned alarm;          /**< Alarm.                  */
 		struct process *next;    /**< Next process in a list. */
 		struct process **chain;  /**< Sleeping chain.         */
 		/**@}*/
 	};
-	
+
 	/* Forward definitions. */
 	EXTERN void bury(struct process *);
 	EXTERN void die(int);
@@ -217,7 +217,7 @@
 	EXTERN void sndsig(struct process *, int);
 	EXTERN void wakeup(struct process **);
 	EXTERN void yield(void);
-	
+
 	/**
 	 * @name Process memory regions
 	 */
@@ -227,51 +227,51 @@
 	#define STACK(p) (&p->pregs[2]) /**< Stack region. */
 	#define HEAP(p)  (&p->pregs[3]) /**< Heap region.  */
 	/**@}*/
-	
+
 	/**
 	 * @brief Asserts if a process is running in kernel mode.
-	 * 
+	 *
 	 * @param p Process to be queried about.
-	 * 
+	 *
 	 * @returns True if the process is running in kernel mode, and false
 	 *          otherwise.
 	 */
 	#define KERNEL_RUNNING(p) ((p)->intlvl > 1)
-	
+
 	/**
 	 * @brief Asserts if a process is the sessions leader.
-	 * 
+	 *
 	 * @param p Process to be queried about.
-	 * 
+	 *
 	 * @returns True if the process is the session leader, and false otherwise.
 	 */
 	#define IS_LEADER(p) ((p)->pgrp->pid == (p)->pid)
-	
+
 	/**
 	 * @brief Asserts if a process is valid.
-	 * 
+	 *
 	 * @param p Process to be queried about.
-	 * 
+	 *
 	 * @returns True if the process is valid, and false otherwise.
 	 */
 	#define IS_VALID(p) \
 		(((p)->state != PROC_DEAD) || ((p)->flags & (1 << PROC_NEW)))
-	
+
 	/**
 	 * @brief Asserts if a process has superuser privileges.
-	 * 
+	 *
 	 * @param p Process to be queried about.
-	 * 
-	 * @returns True if the process has superuser privileges, and false 
+	 *
+	 * @returns True if the process has superuser privileges, and false
 	 *          otherwise.
 	 */
 	#define IS_SUPERUSER(p) \
 		(((p)->uid == SUPERUSER) || ((p)->euid == SUPERUSER))
-	
-	/* Forward definitions. */	
+
+	/* Forward definitions. */
 	EXTERN void resume(struct process *);
 	EXTERN void stop(void);
-	
+
 	/* Forward definitions. */
 	EXTERN int shutting_down;
 	EXTERN struct process proctab[PROC_MAX];
