@@ -1,5 +1,6 @@
 /*
- * Copyright(C) 2011-2016 Pedro H. Penna <pedrohenriquepenna@gmail.com>
+ * Copyright(C) 2011-2016 Pedro H. Penna      <pedrohenriquepenna@gmail.com>
+ *              2017      Matheus Bittencourt <bittencourt.matheus@gmail.com>
  * 
  * This file is part of Nanvix.
  * 
@@ -252,6 +253,13 @@
 	EXTERN void kpanic(const char *, ...);
 	EXTERN void kmemdump(const void *s, size_t n);
 	/**@}*/
+
+	/*========================================================================*
+	 *                                  rand                                  *
+	 *========================================================================*/
+
+	EXTERN void ksrand(uint32_t);
+	EXTERN uint32_t krand(void);
 
 	/*========================================================================*
 	 *                                  other                                 *

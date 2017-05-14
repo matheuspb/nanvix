@@ -1,6 +1,8 @@
 /*
- * Copyright(C) 2011-2016 Pedro H. Penna   <pedrohenriquepenna@gmail.com>
- *              2015-2016 Davidson Francis <davidsondfgl@hotmail.com>
+ * Copyright(C) 2011-2016 Pedro H. Penna      <pedrohenriquepenna@gmail.com>
+ *              2015-2016 Davidson Francis    <davidsondfgl@hotmail.com>
+ *              2017      Matheus Bittencourt <bittencourt.matheus@gmail.com>
+ *              2017      Lucas P. Bordignon  <lucaspbordignon99@gmail.com>
  *
  * This file is part of Nanvix.
  *
@@ -120,6 +122,22 @@
 	#define PROC_FSS      124 /**< FPU Saved Status offset.       */
 	/**@}*/
 
+	/**
+	 * @brief Returns the number of tickets a process should receive.
+	 *
+	 * @details Basically each priority level receives the number of tickets
+	 *          that the lower level receives, times 2. The lowest priority
+	 *          (PRIO_USER) receives 20 tickets. It also takes account of nice,
+	 *          if the process has a nice value of 20, it does nothing related
+	 *          to the tickets. If nice is below 20, then it adds 20-n tickets
+	 *          to the process. If nice is above 20, it removes n-20 tickets
+	 *          from the process. Assuming that 0 <= nice <= 39.  A lower nice
+	 *          value is better for the process.
+	 *
+	 * @param p Process that the number of tickets will be calculated.
+	 */
+	#define PROC_TICKETS(p) (20 << ((- p->priority + 40) / 20)) + (20 - p->nice)
+
 #ifndef _ASM_FILE_
 
 	/**
@@ -201,6 +219,7 @@
 		int counter;             /**< Remaining quantum.      */
 		int priority;            /**< Process priorities.     */
 		int nice;                /**< Nice for scheduling.    */
+		unsigned tickets;        /**< Tickets for lottery.    */
 		unsigned alarm;          /**< Alarm.                  */
 		struct process *next;    /**< Next process in a list. */
 		struct process **chain;  /**< Sleeping chain.         */

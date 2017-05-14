@@ -1,6 +1,8 @@
 /*
- * Copyright(C) 2011-2016 Pedro H. Penna   <pedrohenriquepenna@gmail.com>
- *              2015-2016 Davidson Francis <davidsondfgl@hotmail.com>
+ * Copyright(C) 2011-2016 Pedro H. Penna      <pedrohenriquepenna@gmail.com>
+ *              2015-2016 Davidson Francis    <davidsondfgl@hotmail.com>
+ *              2017      Matheus Bittencourt <bittencourt.matheus@gmail.com>
+ *              2017      Lucas P. Bordignon  <lucaspbordignon99@gmail.com>
  *
  * This file is part of Nanvix.
  *
@@ -22,6 +24,7 @@
 #include <nanvix/const.h>
 #include <nanvix/hal.h>
 #include <nanvix/pm.h>
+#include <nanvix/klib.h>
 #include <signal.h>
 
 /**
@@ -32,7 +35,7 @@
 PUBLIC void sched(struct process *proc)
 {
 	proc->state = PROC_READY;
-	proc->counter = 0;
+	proc->tickets = PROC_TICKETS(proc);
 }
 
 /**
@@ -64,17 +67,18 @@ PUBLIC void resume(struct process *proc)
  */
 PUBLIC void yield(void)
 {
-	struct process *p;    /* Working process.     */
-	struct process *next; /* Next process to run. */
+	struct process *p;       /* Working process.               */
+	struct process *next;    /* Next process to run.           */
+	unsigned int totalt = 0; /* Total number of given tickets. */
 
 	/* Re-schedule process for execution. */
 	if (curr_proc->state == PROC_RUNNING)
-		sched(curr_proc);
+		curr_proc->state = PROC_READY;
 
 	/* Remember this process. */
 	last_proc = curr_proc;
 
-	/* Check alarm. */
+	/* Check alarm and count tickets. */
 	for (p = FIRST_PROC; p <= LAST_PROC; p++)
 	{
 		/* Skip invalid processes. */
@@ -84,36 +88,44 @@ PUBLIC void yield(void)
 		/* Alarm has expired. */
 		if ((p->alarm) && (p->alarm < ticks))
 			p->alarm = 0, sndsig(p, SIGALRM);
+
+		/* Count the total number of tickets given to ready processes. */
+		if (p->state == PROC_READY)
+			totalt += p->tickets;
 	}
 
 	/* Choose a process to run next. */
 	next = IDLE;
-	for (p = FIRST_PROC; p <= LAST_PROC; p++)
+
+	if (totalt > 0)
 	{
-		/* Skip non-ready process. */
-		if (p->state != PROC_READY)
-			continue;
-		
-		/*
-		 * Process with higher
-		 * waiting time found.
-		 */
-		if (p->counter > next->counter)
+		/* Choose a ticket. */
+		unsigned int ticket = (krand() % totalt) + 1;
+		unsigned int losers = 0;
+
+		/* Find the winning process. */
+		for (p = FIRST_PROC; p <= LAST_PROC; p++)
 		{
-			next->counter++;
-			next = p;
-		}
+			/* Skip non-ready process. */
+			if (p->state != PROC_READY)
+				continue;
 			
-		/*
-		 * Increment waiting
-		 * time of process.
-		 */
-		else
-			p->counter++;
+			/* Winning process found. */
+			losers += p->tickets;
+			if(losers >= ticket)
+			{
+				next = p;
+				break;
+			}
+		}
 	}
-	
+
 	/* Switch to next process. */
-	next->priority = PRIO_USER;
+	if (next->priority != PRIO_USER)
+	{
+		next->priority = PRIO_USER;
+		next->tickets = PROC_TICKETS(next);
+	}
 	next->state = PROC_RUNNING;
 	next->counter = PROC_QUANTUM;
 	switch_to(next);
