@@ -21,6 +21,7 @@
 #include <nanvix/hal.h>
 #include <nanvix/klib.h>
 #include <nanvix/pm.h>
+#include <nanvix/mm.h>
 
 /* Clock ticks since system initialization. */
 PUBLIC unsigned ticks = 0;
@@ -46,6 +47,9 @@ PRIVATE void do_clock()
 	/* Give up processor time. */
 	if (--curr_proc->counter == 0)
 		yield();
+
+	if (ticks % 50 == 0)
+		update_ages();
 }
 
 /*

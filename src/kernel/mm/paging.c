@@ -279,10 +279,20 @@ PUBLIC void putkpg(void *kpg)
 PRIVATE struct
 {
 	unsigned count; /**< Reference count.     */
-	unsigned age;   /**< Age.                 */
+	uint32_t age;   /**< Age.                 */
+	uint32_t ticks; /**< Ticks.               */
 	pid_t owner;    /**< Page owner.          */
 	addr_t addr;    /**< Address of the page. */
-} frames[NR_FRAMES] = {{0, 0, 0, 0},  };
+} frames[NR_FRAMES] = {{0, 0, 0, 0, 0},  };
+
+/**
+ * @brief Updates the ticks of each page frame.
+ */
+PUBLIC void update_ticks(void)
+{
+	for (unsigned i = 0; i < NR_FRAMES; i++)
+		frames[i].ticks++;
+}
 
 /**
  * @brief Allocates a page frame.
@@ -296,7 +306,7 @@ PRIVATE int allocf(void)
 	int oldest; /* Oldest page. */
 	
 	#define OLDEST(x, y) (frames[x].age < frames[y].age)
-	
+
 	/* Search for a free frame. */
 	oldest = -1;
 	for (i = 0; i < NR_FRAMES; i++)
@@ -304,14 +314,25 @@ PRIVATE int allocf(void)
 		/* Found it. */
 		if (frames[i].count == 0)
 			goto found;
-		
+
 		/* Local page replacement policy. */
 		if (frames[i].owner == curr_proc->pid)
 		{
+
 			/* Skip shared pages. */
 			if (frames[i].count > 1)
 				continue;
 			
+			/* Updates the age of the frames.*/
+			if (frames[i].ticks > 0)
+			{
+				frames[i].ticks = 0;
+				frames[i].age >>= 1;
+				struct pte* pg = getpte(curr_proc, frames[i].addr);
+				frames[i].age |= pg->accessed << 31;
+				pg->accessed = 0;
+			}
+
 			/* Oldest page found. */
 			if ((oldest < 0) || (OLDEST(i, oldest)))
 				oldest = i;
@@ -328,7 +349,7 @@ PRIVATE int allocf(void)
 	
 found:		
 
-	frames[i].age = ticks;
+	frames[i].age = 1 << 31;
 	frames[i].count = 1;
 	
 	return (i);
