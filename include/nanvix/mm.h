@@ -67,7 +67,7 @@
 	EXTERN void putkpg(void *);
 	EXTERN void mm_init(void);
 	EXTERN void *getkpg(int);
-	EXTERN void update_ticks(void);
+	EXTERN void update_ages(void);
 
 #endif /* _ASM_FILE_ */
 	
