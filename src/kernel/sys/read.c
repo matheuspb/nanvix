@@ -57,7 +57,7 @@ PUBLIC ssize_t sys_read(int fd, void *buf, size_t n)
 	if (n == 0)
 		return (0);
 	
-	 i = f->inode;
+	i = f->inode;
 	
 	/* Character special file. */
 	if (S_ISCHR(i->mode))

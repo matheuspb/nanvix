@@ -84,7 +84,7 @@ found:
 	sb->flags |= SUPERBLOCK_DIRTY;
 	
 	/* Clean block to avoid security issues. */
-	buf = bread(sb->dev, blk);	
+	buf = bread(sb->dev, blk, 1);
 	kmemset(buf->data, 0, BLOCK_SIZE);
 	buf->flags |= BUFFER_DIRTY;
 	brelse(buf);
@@ -154,7 +154,7 @@ PRIVATE void block_free_indirect(struct superblock *sb, block_t num)
 	if (num == BLOCK_NULL)
 		return;
 	
-	buf = bread(sb->dev, num);
+	buf = bread(sb->dev, num, 1);
 		
 	/* Free indirect disk block. */
 	for (i = 0; i < NR_SINGLE; i++)
@@ -184,7 +184,7 @@ PRIVATE void block_free_dindirect(struct superblock *sb, block_t num)
 	if (num == BLOCK_NULL)
 		return;
 	
-	buf = bread(sb->dev, num);
+	buf = bread(sb->dev, num, 1);
 		
 	/* Free direct zone. */
 	for (i = 0; i < NR_SINGLE; i++)
@@ -314,7 +314,7 @@ PUBLIC block_t block_map(struct inode *ip, off_t off, int create)
 		if ((phys = ip->blocks[ZONE_SINGLE]) == BLOCK_NULL)
 			return (BLOCK_NULL);
 	
-		buf = bread(ip->dev, phys);
+		buf = bread(ip->dev, phys, 1);
 		
 		/* Create direct block. */
 		if (((block_t *)buf->data)[logic] == BLOCK_NULL && create)

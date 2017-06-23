@@ -303,7 +303,7 @@ PUBLIC void brelse(struct buffer *buf)
  * @note The device number should be valid.
  * @note The block number should be valid.
  */
-PUBLIC struct buffer *bread(dev_t dev, block_t num)
+PUBLIC struct buffer *bread(dev_t dev, block_t num, uint8_t sync)
 {
 	struct buffer *buf;
 	
@@ -313,12 +313,17 @@ PUBLIC struct buffer *bread(dev_t dev, block_t num)
 	if (buf->flags & BUFFER_VALID)
 		return (buf);
 
+	if (sync)
+		buf->flags |= BUFFER_SYNC;
+	else
+		buf->flags &= ~BUFFER_SYNC;
+
 	bdev_readblk(buf);
-	
+
 	/* Update buffer flags. */
 	buf->flags |= BUFFER_VALID;
 	buf->flags &= ~BUFFER_DIRTY;
-	
+
 	return (buf);
 }
 

@@ -82,7 +82,7 @@ PRIVATE struct d_dirent *dirent_search
 		/* Get buffer. */
 		if ((*buf) == NULL)
 		{
-			(*buf) = bread(dip->dev, blk);
+			(*buf) = bread(dip->dev, blk, 1);
 			d = (*buf)->data;
 		}
 		
@@ -151,7 +151,7 @@ PRIVATE struct d_dirent *dirent_search
 		else
 			blk = block_map(dip, entry*sizeof(struct d_dirent), 0);
 		
-		(*buf) = bread(dip->dev, blk);
+		(*buf) = bread(dip->dev, blk, 1);
 		entry %= (BLOCK_SIZE/sizeof(struct d_dirent));
 		d = &((struct d_dirent *)((*buf)->data))[entry];
 		
@@ -301,7 +301,7 @@ PUBLIC ssize_t file_read(struct inode *i, void *buf, size_t n, off_t off)
 		if (blk == BLOCK_NULL)
 			goto out;
 		
-		bbuf = bread(i->dev, blk);
+		bbuf = bread(i->dev, blk, 1);
 			
 		blkoff = off % BLOCK_SIZE;
 		
@@ -324,6 +324,22 @@ PUBLIC ssize_t file_read(struct inode *i, void *buf, size_t n, off_t off)
 		off += chunk;
 		p += chunk;
 	} while (n > 0);
+
+	#define N_PREFETCH 4
+
+	/* Prefetch 'N_PREFETCH' more blocks */
+	for (int j = N_PREFETCH * BLOCK_SIZE; j > 0; j -= chunk)
+	{
+		blk = block_map(i, off, 0);
+
+		if (blk == BLOCK_NULL)
+			goto out;
+
+		bbuf = bread(i->dev, blk, 0);
+		brelse(bbuf);
+
+		off += chunk;
+	}
 
 out:
 	inode_touch(i);
@@ -355,7 +371,7 @@ PUBLIC ssize_t file_write(struct inode *i, const void *buf, size_t n, off_t off)
 		if (blk == BLOCK_NULL)
 			goto out;
 		
-		bbuf = bread(i->dev, blk);
+		bbuf = bread(i->dev, blk, 1);
 		
 		blkoff = off % BLOCK_SIZE;
 		

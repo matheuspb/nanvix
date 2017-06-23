@@ -162,7 +162,7 @@ PRIVATE void inode_write(struct inode *ip)
 	blk = 2 + sb->imap_blocks + sb->zmap_blocks + (ip->num - 1)/INODES_PER_BLOCK;
 	
 	/* Read chunk of disk inodes. */
-	buf = bread(ip->dev, blk);
+	buf = bread(ip->dev, blk, 1);
 	if (buf == NULL)
 	{
 		kprintf("fs: failed to write inode %d to disk", ip->num);
@@ -219,7 +219,7 @@ PRIVATE struct inode *inode_read(dev_t dev, ino_t num)
 	blk = 2 + sb->imap_blocks + sb->zmap_blocks + (num - 1)/INODES_PER_BLOCK;
 	
 	/* Read chunk of disk inodes. */
-	buf = bread(dev, blk);
+	buf = bread(dev, blk, 1);
 	if (buf == NULL)
 	{
 		kprintf("fs: failed to read inode %d from disk", num);

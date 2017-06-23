@@ -646,6 +646,7 @@ ata_sched_raw(unsigned atadevid, block_t num, void *buf, size_t size, unsigned f
  */
 PRIVATE int ata_readblk(unsigned minor, buffer_t buf)
 {
+	unsigned flags;
 	struct atadev *dev;
 	
 	/* Invalid minor device. */
@@ -657,8 +658,10 @@ PRIVATE int ata_readblk(unsigned minor, buffer_t buf)
 	/* Device not valid. */
 	if (!(dev->flags & ATADEV_VALID))
 		return (-EINVAL);
+
+	flags = REQ_BUF | (buffer_is_sync(buf) ? REQ_SYNC : 0);
 	
-	ata_sched_buffered(minor, buf, REQ_BUF | REQ_SYNC);
+	ata_sched_buffered(minor, buf, flags);
 	
 	return (0);
 }

@@ -277,7 +277,7 @@ PUBLIC struct superblock *superblock_read(dev_t dev)
 		goto error0;
 	
 	/* Read superblock from device. */
-	buf = bread(dev, 1);
+	buf = bread(dev, 1, 1);
 	d_sb = (struct d_superblock *)buf->data;
 	
 	/* Bad magic number. */
@@ -299,10 +299,10 @@ PUBLIC struct superblock *superblock_read(dev_t dev)
 	sb->ninodes = d_sb->s_ninodes;
 	sb->imap_blocks = d_sb->s_imap_nblocks;
 	for (unsigned i = 0; i < sb->imap_blocks; i++)
-		blkunlock(sb->imap[i] = bread(dev, 2 + i));
+		blkunlock(sb->imap[i] = bread(dev, 2 + i, 1));
 	sb->zmap_blocks = d_sb->s_bmap_nblocks;
 	for (unsigned i = 0; i < sb->zmap_blocks; i++)
-		blkunlock(sb->zmap[i] = bread(dev, 2 + sb->imap_blocks + i));
+		blkunlock(sb->zmap[i] = bread(dev, 2 + sb->imap_blocks + i, 1));
 	sb->first_data_block = d_sb->s_first_data_block;
 	sb->max_size = d_sb->s_max_size;
 	sb->zones = d_sb->s_nblocks;

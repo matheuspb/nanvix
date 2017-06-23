@@ -65,7 +65,7 @@ PRIVATE addr_t load_elf32(struct inode *inode)
 	}
 	
 	/* Read ELF file header. */
-	header = bread(inode->dev, blk);
+	header = bread(inode->dev, blk, 1);
 	elf = buffer_data(header);
 	
 	/* Bad ELF file. */
