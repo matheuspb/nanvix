@@ -328,7 +328,7 @@ PUBLIC ssize_t file_read(struct inode *i, void *buf, size_t n, off_t off)
 	#define N_PREFETCH 4
 
 	/* Prefetch 'N_PREFETCH' more blocks */
-	for (int j = N_PREFETCH * BLOCK_SIZE; j > 0; j -= chunk)
+	for (unsigned j = 0; j < N_PREFETCH * BLOCK_SIZE; j++)
 	{
 		blk = block_map(i, off, 0);
 
@@ -338,7 +338,7 @@ PUBLIC ssize_t file_read(struct inode *i, void *buf, size_t n, off_t off)
 		bbuf = bread(i->dev, blk, 0);
 		brelse(bbuf);
 
-		off += chunk;
+		off += BLOCK_SIZE;
 	}
 
 out:

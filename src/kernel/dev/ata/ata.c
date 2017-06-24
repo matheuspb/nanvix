@@ -864,10 +864,10 @@ PRIVATE void ata_handler(int atadevid)
 	word_t word;         /* Working word.  */
 	size_t size;         /* Write size.    */
 	unsigned char *buf;  /* Buffer to use. */
-	
+
 	bus = ata_bus(atadevid);
 	dev = &ata_devices[atadevid];
-	
+
 	/*
 	 * That's weird! A non valid device
 	 * is firing an IRQ. Let's just ignore it so.
@@ -884,33 +884,33 @@ PRIVATE void ata_handler(int atadevid)
 		dev->flags &= ~ATADEV_DISCARD;
 		return;
 	}
-	
+
 	/* Broken block operation queue. */
 	if (dev->queue.size == 0)
 	{
 		kpanic("ATA: broken block operation queue?");
 		goto out;
 	}
-	
+
 	/* Get first request. */
 	req = &dev->queue.requests[dev->queue.head];
 	dev->queue.head = (dev->queue.head + 1)%ATADEV_QUEUE_SIZE;
 	dev->queue.size--;
-	
+
 	/* Buffered I/O operation. */
 	if (req->flags & REQ_BUF)
 	{
 		buf = buffer_data(req->u.buffered.buf);
 		size = BLOCK_SIZE;
 	}
-	
+
 	/* Raw I/O operation. */
 	else
 	{
 		buf = req->u.raw.buf;
 		size = req->u.raw.size;
 	}
-	
+
 	/* Write operation. */
 	if (req->flags & REQ_WRITE)
 	{
@@ -928,7 +928,7 @@ PRIVATE void ata_handler(int atadevid)
 			brelse(req->u.buffered.buf);
 		}
 	}
-	
+
 	/* Read operation. */
 	else
 	{			
@@ -940,8 +940,14 @@ PRIVATE void ata_handler(int atadevid)
 			buf[i] = word & 0xff;
 			buf[i + 1] = (word >> 8) & 0xff;
 		}
+
+		if (!(req->flags & REQ_SYNC))
+		{
+			buffer_dirty(req->u.buffered.buf, 0);
+			buffer_valid(req->u.buffered.buf, 1);
+		}
 	}
-	
+
 	/* Process next operation. */
 	if (dev->queue.size > 0)
 	{

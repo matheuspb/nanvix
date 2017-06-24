@@ -71,6 +71,7 @@
 	EXTERN buffer_t bread(dev_t, block_t, uint8_t);
 	EXTERN void bwrite(buffer_t);
 	EXTERN void buffer_dirty(buffer_t, int);
+	EXTERN void buffer_valid(buffer_t, int);
 	EXTERN void *buffer_data(const_buffer_t);
 	EXTERN dev_t buffer_dev(const_buffer_t);
 	EXTERN block_t buffer_num(const_buffer_t);

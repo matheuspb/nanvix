@@ -321,8 +321,11 @@ PUBLIC struct buffer *bread(dev_t dev, block_t num, uint8_t sync)
 	bdev_readblk(buf);
 
 	/* Update buffer flags. */
-	buf->flags |= BUFFER_VALID;
-	buf->flags &= ~BUFFER_DIRTY;
+	if (sync)
+	{
+		buf->flags |= BUFFER_VALID;
+		buf->flags &= ~BUFFER_DIRTY;
+	}
 
 	return (buf);
 }
@@ -410,6 +413,20 @@ PUBLIC void bsync(void)
 PUBLIC inline void buffer_dirty(struct buffer *buf, int set)
 {
 	buf->flags = (set) ? buf->flags | BUFFER_DIRTY : buf->flags & ~BUFFER_DIRTY;
+}
+
+/**
+ * @brief Sets/clears buffer's valid flag.
+ *
+ * @details If set equals to non-zero, then the valid flag of the buffer pointed
+ *          to by buf is set, otherwise the flag is cleared.
+ *
+ * @param buf Buffer in which the valid flag shall be set/cleared.
+ * @param set Set valid flag?
+ */
+PUBLIC inline void buffer_valid(struct buffer *buf, int set)
+{
+	buf->flags = (set) ? buf->flags | BUFFER_VALID : buf->flags & ~BUFFER_VALID;
 }
 
 /**
